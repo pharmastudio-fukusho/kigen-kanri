@@ -288,7 +288,8 @@ function renderList() {
 }
 
 function thumbHtml(p, big = false) {
-  const url = p.photo_url || state.localPhotoUrls[p.id];
+  // 未同期の新しい写真があればそちらを優先表示
+  const url = state.localPhotoUrls[p.id] || p.photo_url;
   return url
     ? `<img class="product-thumb" src="${esc(url)}" alt="" loading="lazy">`
     : `<div class="product-thumb">📦</div>`;
@@ -330,6 +331,7 @@ function renderSheet() {
       <button class="lot-del-btn" data-act="del" title="この期限を削除">🗑</button>` : ''}
     </div>`).join('') || '<p class="muted">この店舗には在庫が登録されていません</p>';
 
+  const hasPhoto = !!(state.localPhotoUrls[p.id] || p.photo_url);
   $('sheet-body').innerHTML = `
     <div class="sheet-product-head">
       ${thumbHtml(p, true)}
@@ -338,6 +340,7 @@ function renderSheet() {
           <button class="btn-icon" id="sheet-rename" title="商品名を変更">✏️</button>
         </div>
         ${p.barcode ? `<div class="sheet-barcode">バーコード: ${esc(p.barcode)}</div>` : ''}
+        ${editable ? `<button class="btn btn-secondary btn-small" id="sheet-photo-btn">📷 ${hasPhoto ? '写真を変更' : '写真を追加'}</button>` : ''}
       </div>
     </div>
     <div class="sheet-section-title">${esc(storeName)} の期限と在庫</div>
@@ -367,6 +370,26 @@ async function loadOtherStores(productId) {
     const detail = ls.map((l) => `${fmtDate(l.expiry_date)} ×${l.quantity}`).join(' / ');
     return `<div class="other-store-row"><b>${esc(name)}</b><span>${detail}</span></div>`;
   }).join('');
+}
+
+// 詳細シートから商品写真を追加・変更する
+async function onSheetPhotoSelected(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file || !sheetProductId) return;
+  const p = state.products.find((x) => x.id === sheetProductId);
+  if (!p) return;
+  try {
+    const blob = await compressImage(file);
+    await idb.put('photos', blob, p.id);
+    state.localPhotoUrls[p.id] = URL.createObjectURL(blob);
+    queueOp({ type: 'product_save', product: { id: p.id, barcode: p.barcode, name: p.name, photo_url: p.photo_url }, photoId: p.id });
+    renderSheet();
+    renderList();
+    toast('写真を保存しました');
+  } catch (_) {
+    toast('写真を読み込めませんでした', true);
+  }
 }
 
 /* ───────── 在庫の増減・削除 ───────── */
@@ -1023,6 +1046,10 @@ function bindEvents() {
       if (act === 'del') deleteLot(lotRow.dataset.lot);
       return;
     }
+    if (e.target.id === 'sheet-photo-btn') {
+      $('sheet-photo-input').click();
+      return;
+    }
     if (e.target.id === 'sheet-add-lot') {
       const p = state.products.find((x) => x.id === sheetProductId);
       closeSheet();
@@ -1039,6 +1066,8 @@ function bindEvents() {
       }
     }
   });
+
+  $('sheet-photo-input').addEventListener('change', onSheetPhotoSelected);
 
   // フォーム
   $('form-back').addEventListener('click', () => { showView('view-main'); switchTab(state.tab); });

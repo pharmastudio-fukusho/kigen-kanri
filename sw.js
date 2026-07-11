@@ -1,5 +1,5 @@
 // Service Worker: アプリ本体をキャッシュしてオフラインでも起動できるようにする
-const VERSION = 'kigen-v3';
+const VERSION = 'kigen-v4';
 const PHOTO_CACHE = 'kigen-photos-v1';
 const SHELL = [
   './',
