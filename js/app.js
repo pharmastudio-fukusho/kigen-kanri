@@ -416,11 +416,15 @@ function openForm(mode, opts = {}) {
   $('ocr-btn').hidden = true;
   $('ocr-chips').innerHTML = '';
   $('ocr-status').hidden = true;
+  // 期限はデフォルトで「年月」入力(月末の日付として登録)。日付指定はチェック時のみ
   $('f-expiry').value = '';
   $('f-expiry-month').value = '';
-  $('f-month-only').checked = false;
-  $('f-expiry').hidden = false;
-  $('f-expiry-month').hidden = true;
+  $('f-day-exact').checked = false;
+  $('f-expiry-month').hidden = false;
+  $('f-expiry-month').required = true;
+  $('month-note').hidden = false;
+  $('f-expiry').hidden = true;
+  $('f-expiry').required = false;
   $('f-qty').value = 1;
   // 期限追加モードでは写真・バーコード欄は隠す
   $('f-barcode').closest('.field').hidden = mode === 'addLot';
@@ -467,14 +471,14 @@ function compressImage(file, maxSize = 900, quality = 0.72) {
 }
 
 function getExpiryValue() {
-  if ($('f-month-only').checked) {
-    const v = $('f-expiry-month').value;          // "2026-08"
-    if (!v) return null;
-    const [y, m] = v.split('-').map(Number);
-    const last = new Date(y, m, 0).getDate();     // 月末日
-    return `${y}-${String(m).padStart(2, '0')}-${String(last).padStart(2, '0')}`;
+  if ($('f-day-exact').checked) {
+    return $('f-expiry').value || null;
   }
-  return $('f-expiry').value || null;
+  const v = $('f-expiry-month').value;          // "2026-08"
+  if (!v) return null;
+  const [y, m] = v.split('-').map(Number);
+  const last = new Date(y, m, 0).getDate();     // 月末日
+  return `${y}-${String(m).padStart(2, '0')}-${String(last).padStart(2, '0')}`;
 }
 
 async function saveForm(e) {
@@ -614,35 +618,33 @@ async function startScan() {
   const video = $('scan-video');
   const status = $('scan-status');
   status.textContent = 'カメラを起動しています…';
-  const constraints = {
-    audio: false,
-    video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
-  };
   try {
-    // iPhone/ブラウザ標準の読み取り機能があれば優先(高速・高精度)
+    scanStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+    });
+    video.srcObject = scanStream;
+    await video.play();
+
+    // 対応機種では2倍ズームにして小さなバーコードにピントが合いやすくする
+    try {
+      const track = scanStream.getVideoTracks()[0];
+      const caps = track.getCapabilities ? track.getCapabilities() : {};
+      if (caps.zoom && caps.zoom.max >= 2) {
+        await track.applyConstraints({ advanced: [{ zoom: Math.min(2, caps.zoom.max) }] });
+      }
+    } catch (_) {}
+
+    // iPhone/ブラウザ標準の読み取り機能があれば併用(高速・高精度)
     nativeDetector = null;
     if (window.BarcodeDetector) {
       try { nativeDetector = new BarcodeDetector({ formats: SCAN_FORMATS_NATIVE }); } catch (_) {}
     }
-    if (nativeDetector) {
-      scanStream = await navigator.mediaDevices.getUserMedia(constraints);
-      video.srcObject = scanStream;
-      await video.play();
-      const loop = async () => {
-        if (!scanActive) return;
-        try {
-          const codes = await nativeDetector.detect(video);
-          if (codes.length) onBarcode(codes[0].rawValue);
-        } catch (_) {}
-        scanLoopTimer = setTimeout(loop, 180);
-      };
-      loop();
-    } else {
-      zxingReader = new ZXing.BrowserMultiFormatReader(scanHints(), 180);
-      await zxingReader.decodeFromConstraints(constraints, video,
-        (result) => { if (result) onBarcode(result.getText()); });
-    }
-    status.textContent = 'バーコードを枠内にかざしてください(ピントが合うまで少し待ちます)';
+    zxingReader = new ZXing.MultiFormatReader();
+    zxingReader.setHints(scanHints());
+    scanTickCount = 0;
+    scanTick();
+    status.textContent = 'バーコードを枠内に大きく写してください';
   } catch (err) {
     scanActive = false;
     status.textContent = (err && err.name === 'NotAllowedError')
@@ -651,13 +653,74 @@ async function startScan() {
   }
 }
 
+let scanTickCount = 0;
+
+// 動画から定期的にフレームを取り、枠内を切り出して解析する。
+// 全体を解析するよりノイズが減り、読み取り率が大きく上がる。
+async function scanTick() {
+  if (!scanActive) return;
+  const video = $('scan-video');
+  if (video.readyState >= 2 && video.videoWidth) {
+    try {
+      if (nativeDetector) {
+        const codes = await nativeDetector.detect(video);
+        if (codes.length) { onBarcode(codes[0].rawValue); }
+      }
+      if (scanActive && zxingReader) {
+        let canvas = cropGuideRegion(video);
+        if (canvas) {
+          // 縦向きバーコードにも対応するため、0°と90°を交互に試す
+          if (scanTickCount % 2 === 1) canvas = rotateCanvas90(canvas);
+          try {
+            const source = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
+            const bitmap = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(source));
+            const result = zxingReader.decode(bitmap);
+            if (result) onBarcode(result.getText());
+          } catch (_) { /* このフレームでは見つからず */ }
+          zxingReader.reset();
+        }
+      }
+    } catch (_) {}
+  }
+  scanTickCount++;
+  scanLoopTimer = setTimeout(scanTick, 200);
+}
+
+// 画面のガイド枠に相当する中央領域を切り出す
+function cropGuideRegion(video) {
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!vw || !vh) return null;
+  const cw = Math.round(vw * 0.8);
+  const ch = Math.round(vh * 0.62);
+  const cx = Math.round((vw - cw) / 2);
+  const cy = Math.round((vh - ch) / 2);
+  const scale = Math.min(1, 1100 / cw);
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(cw * scale);
+  canvas.height = Math.round(ch * scale);
+  canvas.getContext('2d').drawImage(video, cx, cy, cw, ch, 0, 0, canvas.width, canvas.height);
+  return canvas;
+}
+
+function rotateCanvas90(src) {
+  const out = document.createElement('canvas');
+  out.width = src.height;
+  out.height = src.width;
+  const ctx = out.getContext('2d');
+  ctx.translate(out.width / 2, out.height / 2);
+  ctx.rotate(Math.PI / 2);
+  ctx.drawImage(src, -src.width / 2, -src.height / 2);
+  return out;
+}
+
 function stopScan() {
   scanActive = false;
   clearTimeout(scanLoopTimer);
   if (scanStream) { scanStream.getTracks().forEach((t) => t.stop()); scanStream = null; }
   const v = $('scan-video');
   if (v) v.srcObject = null;
-  if (zxingReader) { try { zxingReader.reset(); } catch (_) {} zxingReader = null; }
+  zxingReader = null;
+  nativeDetector = null;
 }
 
 // 静止画(撮影した写真)からバーコードを読み取る。
@@ -986,10 +1049,13 @@ function bindEvents() {
     const chip = e.target.closest('[data-ocr]');
     if (chip) { $('f-name').value = chip.dataset.ocr; }
   });
-  $('f-month-only').addEventListener('change', (e) => {
-    $('f-expiry').hidden = e.target.checked;
-    $('f-expiry-month').hidden = !e.target.checked;
-    $('f-expiry').required = !e.target.checked;
+  $('f-day-exact').addEventListener('change', (e) => {
+    const exact = e.target.checked;
+    $('f-expiry').hidden = !exact;
+    $('f-expiry').required = exact;
+    $('f-expiry-month').hidden = exact;
+    $('f-expiry-month').required = !exact;
+    $('month-note').hidden = exact;
   });
   $('f-qty-plus').addEventListener('click', () => { $('f-qty').value = (parseInt($('f-qty').value, 10) || 0) + 1; });
   $('f-qty-minus').addEventListener('click', () => { $('f-qty').value = Math.max(0, (parseInt($('f-qty').value, 10) || 0) - 1); });

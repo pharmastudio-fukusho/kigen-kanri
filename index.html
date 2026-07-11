@@ -168,10 +168,11 @@
       <input id="f-name" type="text" placeholder="例: ○○ビタミン錠 60錠" required>
     </div>
     <div class="field" id="lot-fields">
-      <label for="f-expiry">賞味期限・使用期限 <span class="req">必須</span></label>
-      <input id="f-expiry" type="date" required>
-      <label class="check-row"><input id="f-month-only" type="checkbox">「年月」までの表示の商品(月末の日付として登録)</label>
-      <input id="f-expiry-month" type="month" hidden>
+      <label for="f-expiry-month">賞味期限・使用期限(年月) <span class="req">必須</span></label>
+      <input id="f-expiry-month" type="month" required>
+      <p class="muted" id="month-note">月末の日付として登録されます</p>
+      <label class="check-row"><input id="f-day-exact" type="checkbox">日付まで指定する</label>
+      <input id="f-expiry" type="date" hidden>
     </div>
     <div class="field">
       <label for="f-qty">在庫数 <span class="req">必須</span></label>
