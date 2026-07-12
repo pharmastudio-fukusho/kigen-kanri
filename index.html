@@ -12,27 +12,190 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="css/style.css">
+<style>
+:root {
+  --primary:#0f766e; --primary-dark:#115e59; --bg:#f4f5f7; --card:#fff;
+  --text:#1f2937; --muted:#6b7280; --border:#e5e7eb;
+  --expired:#7f1d1d; --danger:#dc2626; --warn:#d97706; --ok:#059669; --radius:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  background:var(--bg);color:var(--text);font-size:16px;line-height:1.5}
+h1{font-size:24px;margin:8px 0 4px}h2{font-size:18px;margin:12px 0 8px}
+h3{font-size:15px;margin:0 0 8px;color:var(--muted)}
+.muted{color:var(--muted);font-size:13px}
+[hidden]{display:none!important}
+.btn{display:block;width:100%;border:none;border-radius:var(--radius);font-size:16px;font-weight:600;
+  padding:14px;margin-top:10px;cursor:pointer;text-align:center}
+.btn-lg{padding:16px;font-size:17px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:disabled{opacity:.5}
+.btn-secondary{background:#e0f2f1;color:var(--primary-dark)}
+.btn-ghost{background:transparent;color:var(--primary)}
+.btn-danger-outline{background:transparent;color:var(--danger);border:1.5px solid var(--danger)}
+.btn-icon{background:none;border:none;font-size:22px;padding:8px 12px;cursor:pointer;color:var(--text)}
+.view{min-height:100dvh}
+.login-box{max-width:420px;margin:0 auto;padding:calc(40px + env(safe-area-inset-top,0px)) 20px 40px;text-align:center}
+.app-logo{font-size:56px}
+.store-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.store-grid button{padding:16px 8px;border-radius:var(--radius);border:2px solid var(--border);
+  background:var(--card);font-size:16px;font-weight:600;cursor:pointer;color:var(--text)}
+.store-grid button.selected{border-color:var(--primary);background:#e0f2f1;color:var(--primary-dark)}
+#login-form input{width:100%;padding:14px;font-size:16px;border:1.5px solid var(--border);border-radius:var(--radius)}
+.error-msg{color:var(--danger);font-weight:600}
+.start-store-card{background:var(--card);border-radius:var(--radius);padding:20px;margin:24px 0 8px;
+  display:flex;flex-direction:column;gap:4px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.start-store-card strong{font-size:22px;color:var(--primary-dark)}
+#view-main{padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+#app-header{position:sticky;top:0;z-index:20;background:var(--primary);color:#fff;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;
+  display:flex;justify-content:space-between;align-items:center}
+.header-store-label{font-size:11px;opacity:.8;display:block;line-height:1}
+.header-store-name{font-size:17px;font-weight:700}
+.busy-badge{font-size:12px;padding:4px 10px;border-radius:20px;font-weight:600;background:#fbbf24;color:#78350f}
+.tab-page{padding:12px 12px 24px}
+.list-controls{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.view-store-row{display:flex;align-items:center;gap:8px}
+.view-store-row label{font-size:13px;color:var(--muted);white-space:nowrap}
+.view-store-row select{flex:1;padding:10px;font-size:16px;border-radius:10px;border:1.5px solid var(--border);background:var(--card)}
+.readonly-note{font-size:12px;font-weight:700;color:#92400e;background:#fef3c7;padding:4px 10px;border-radius:20px;white-space:nowrap}
+#search-box{width:100%;padding:12px 14px;font-size:16px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--card)}
+.filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--border);background:var(--card);color:var(--text);border-radius:20px;
+  padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer}
+.chip.active{border-color:var(--primary);background:var(--primary);color:#fff}
+.chip-expired.active{border-color:var(--expired);background:var(--expired)}
+.chip-danger.active{border-color:var(--danger);background:var(--danger)}
+.chip-warn.active{border-color:var(--warn);background:var(--warn)}
+#sort-select{margin-left:auto;padding:8px;font-size:13px;border-radius:10px;border:1.5px solid var(--border);background:var(--card)}
+.product-list{display:flex;flex-direction:column;gap:10px}
+.product-card{background:var(--card);border-radius:var(--radius);box-shadow:0 1px 3px rgba(0,0,0,.08);
+  padding:12px;display:flex;gap:12px;cursor:pointer}
+.product-thumb{width:64px;height:64px;border-radius:10px;object-fit:cover;background:#eceff1;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:28px}
+.product-info{flex:1;min-width:0}
+.product-name{font-weight:700;font-size:15px;margin-bottom:4px;word-break:break-all}
+.lot-line{display:flex;align-items:center;gap:8px;font-size:14px;margin-top:2px}
+.lot-qty{color:var(--muted);font-size:13px}
+.badge{font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;white-space:nowrap}
+.badge-expired{background:var(--expired);color:#fff}
+.badge-danger{background:#fee2e2;color:var(--danger)}
+.badge-warn{background:#fef3c7;color:var(--warn)}
+.badge-ok{background:#d1fae5;color:var(--ok)}
+.empty-state{text-align:center;padding:48px 16px}
+.scan-area{position:relative;border-radius:var(--radius);overflow:hidden;background:#111;aspect-ratio:3/4;max-height:55dvh;width:100%}
+#scan-video{width:100%;height:100%;object-fit:cover}
+.scan-frame{position:absolute;inset:20% 12%;border:3px solid rgba(255,255,255,.85);border-radius:14px;
+  box-shadow:0 0 0 999px rgba(0,0,0,.25)}
+.scan-status{position:absolute;bottom:8px;left:0;right:0;text-align:center;color:#fff;font-size:14px;
+  font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.8);margin:0}
+.scan-manual{margin-top:14px}
+#manual-barcode-form{display:flex;gap:8px;margin-top:10px}
+#manual-barcode{flex:1;padding:12px;font-size:16px;border:1.5px solid var(--border);border-radius:var(--radius)}
+#manual-barcode-form .btn{width:auto;margin:0;padding:12px 18px}
+.settings-group{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.settings-store-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:8px}
+.settings-store-row:last-child{border-bottom:none}
+.settings-store-row .rename-btn{border:1.5px solid var(--border);background:var(--bg);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer}
+.version{text-align:center}
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;background:var(--card);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom,0px)}
+.nav-btn{flex:1;background:none;border:none;cursor:pointer;padding:8px 0 6px;font-size:12px;font-weight:600;
+  color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
+.nav-btn.active{color:var(--primary)}
+.nav-icon{font-size:22px}
+.form-header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--border);
+  padding:calc(6px + env(safe-area-inset-top,0px)) 8px 6px;display:flex;align-items:center;gap:4px}
+.form-header h2{margin:0}
+.form-body{padding:16px 16px 32px;max-width:480px;margin:0 auto}
+.field{margin-bottom:18px}
+.field>label{display:block;font-weight:700;font-size:14px;margin-bottom:6px}
+.req{color:var(--danger);font-size:11px;font-weight:700;margin-left:4px}
+.field input[type="text"],.field input[type="date"],.field input[type="month"],.field input[type="number"]{
+  width:100%;padding:13px;font-size:16px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--card)}
+.check-row{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:400;margin-top:8px;color:var(--muted)}
+.check-row input{width:18px;height:18px}
+.photo-area{display:flex;gap:12px;align-items:center}
+#f-photo-preview{width:96px;height:96px;border-radius:10px;object-fit:cover}
+.photo-btn{margin:0;flex:1}
+.qty-row{display:flex;gap:10px;align-items:center}
+.qty-row input{text-align:center;font-size:20px;font-weight:700}
+.qty-btn{width:52px;height:52px;flex-shrink:0;border-radius:50%;border:1.5px solid var(--border);
+  background:var(--card);font-size:26px;font-weight:700;cursor:pointer;color:var(--primary-dark)}
+#sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:30}
+.sheet{position:fixed;bottom:0;left:0;right:0;z-index:31;background:var(--card);border-radius:18px 18px 0 0;
+  max-height:85dvh;overflow-y:auto;padding:8px 16px calc(24px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 24px rgba(0,0,0,.2)}
+.sheet-handle{width:44px;height:5px;border-radius:3px;background:var(--border);margin:4px auto 10px}
+.sheet-product-head{display:flex;gap:14px;margin-bottom:12px}
+.sheet-product-head .product-thumb{width:84px;height:84px;font-size:36px}
+.sheet-product-name{font-size:17px;font-weight:700;word-break:break-all}
+.sheet-barcode{font-size:12px;color:var(--muted);margin-top:4px}
+.sheet-section-title{font-size:13px;font-weight:700;color:var(--muted);margin:16px 0 6px;
+  display:flex;justify-content:space-between;align-items:center}
+.lot-row{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.lot-row-date{flex:1}
+.lot-row-date .badge{margin-left:6px}
+.lot-row .qty-btn{width:42px;height:42px;font-size:22px;background:var(--card)}
+.lot-row-qty{min-width:34px;text-align:center;font-size:18px;font-weight:800}
+.lot-del-btn{background:none;border:none;font-size:18px;color:var(--muted);cursor:pointer;padding:6px}
+.other-store-row{display:flex;justify-content:space-between;font-size:14px;padding:8px 4px;border-bottom:1px solid var(--border)}
+.other-store-row:last-child{border-bottom:none}
+#toast-container{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom,0px));left:0;right:0;display:flex;flex-direction:column;
+  align-items:center;gap:8px;z-index:50;pointer-events:none}
+.toast{background:#1f2937;color:#fff;font-size:14px;font-weight:600;padding:10px 18px;border-radius:24px;
+  max-width:90%;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.toast.error{background:var(--danger)}
+.preview-banner{background:#fbbf24;color:#78350f;text-align:center;font-size:13px;font-weight:700;padding:6px}
+.camera-fallback{background:#fef3c7;border:1.5px solid #f59e0b;border-radius:var(--radius);padding:14px;font-size:14px}
+.camera-fallback p{margin:6px 0}
+.btn-small{width:auto;padding:8px 14px;font-size:13px;margin-top:8px}
+</style>
 </head>
 <body>
 
-<!-- ═══ ログイン画面 ═══ -->
+<!-- 起動前でも必ず何かが見えるようにする(真っ白画面の防止) -->
+<div id="boot-splash" style="text-align:center;padding:60px 20px;color:#6b7280">
+  <div style="font-size:48px">📦</div>
+  <p>読み込み中…</p>
+</div>
+<div id="fatal-error" style="display:none;background:#fee2e2;color:#7f1d1d;padding:14px;margin:12px;border-radius:12px;font-size:13px;word-break:break-all"></div>
+<script>
+// どこかでエラーが起きたら画面に表示する(白い画面のまま止まるのを防ぐ)
+function showFatal(msg) {
+  var el = document.getElementById('fatal-error');
+  if (el) {
+    el.style.display = 'block';
+    el.textContent = '⚠️ エラーが発生しました。この内容をそのまま伝えてください: ' + msg;
+  }
+  var sp = document.getElementById('boot-splash');
+  if (sp) sp.style.display = 'none';
+}
+window.addEventListener('error', function (e) {
+  showFatal((e.message || 'unknown') + ' [' + (e.filename || '') + ':' + (e.lineno || '') + ']');
+});
+window.addEventListener('unhandledrejection', function (e) {
+  showFatal(String((e.reason && e.reason.message) || e.reason || 'unknown'));
+});
+</script>
+
+<div id="preview-banner" class="preview-banner" hidden>プレビューモード(データは保存されません)</div>
+
+<!-- ═══ ログイン ═══ -->
 <section id="view-login" class="view" hidden>
   <div class="login-box">
     <div class="app-logo">📦</div>
     <h1>期限管理</h1>
-    <p class="login-note">店舗を選んでパスワードを入力してください</p>
-    <div id="login-stores" class="store-grid"></div>
+    <p class="muted">店舗を選んでパスワードを入力してください</p>
+    <div id="login-stores" class="store-grid"><p class="muted">読み込み中…</p></div>
     <form id="login-form">
-      <input id="login-password" type="password" placeholder="この店舗のパスワード" autocomplete="current-password" required>
+      <input id="login-password" type="password" placeholder="この店舗のパスワード" required>
       <button type="submit" class="btn btn-primary btn-lg" id="login-btn">ログイン</button>
     </form>
     <p id="login-error" class="error-msg" hidden></p>
-    <p id="login-offline" class="muted" hidden>オフラインのため、ログインには通信が必要です</p>
   </div>
 </section>
 
-<!-- ═══ 作業開始確認画面 ═══ -->
+<!-- ═══ 作業開始確認 ═══ -->
 <section id="view-start" class="view" hidden>
   <div class="login-box">
     <div class="app-logo">📦</div>
@@ -46,20 +209,13 @@
   </div>
 </section>
 
-<!-- ═══ メイン画面 ═══ -->
+<!-- ═══ メイン ═══ -->
 <div id="view-main" class="view" hidden>
   <header id="app-header">
-    <div class="header-store" id="header-store" title="作業中の店舗">
-      <span class="header-store-label">作業店舗</span>
-      <span class="header-store-name" id="header-store-name">—</span>
-    </div>
-    <div class="header-right">
-      <span id="sync-badge" class="sync-badge" hidden>未送信 <b id="sync-count">0</b></span>
-      <span id="offline-badge" class="offline-badge" hidden>オフライン</span>
-    </div>
+    <div><span class="header-store-label">作業店舗</span><span class="header-store-name" id="header-store-name">—</span></div>
+    <span id="busy-badge" class="busy-badge" hidden>保存中…</span>
   </header>
 
-  <!-- ── 商品一覧タブ ── -->
   <main id="tab-list" class="tab-page">
     <div class="list-controls">
       <div class="view-store-row">
@@ -89,12 +245,15 @@
     </div>
   </main>
 
-  <!-- ── バーコード読取タブ ── -->
   <main id="tab-scan" class="tab-page" hidden>
-    <div class="scan-area">
+    <div class="scan-area" id="scan-area">
       <video id="scan-video" playsinline muted></video>
       <div class="scan-frame"></div>
       <p id="scan-status" class="scan-status">カメラを起動しています…</p>
+    </div>
+    <div id="camera-fallback" class="camera-fallback" hidden>
+      <p><b>この画面(GAS版)では、Googleのセキュリティ上ライブカメラを使えません。</b></p>
+      <p>下の「📸 写真を撮って読み取る」を押すとカメラが起動し、撮った写真からバーコードを読み取ります。こちらは確実に動作します。</p>
     </div>
     <div class="scan-manual">
       <label class="btn btn-secondary">
@@ -109,7 +268,6 @@
     </div>
   </main>
 
-  <!-- ── 設定タブ ── -->
   <main id="tab-settings" class="tab-page" hidden>
     <h2>設定</h2>
     <div class="settings-group">
@@ -117,19 +275,17 @@
       <div id="settings-stores"></div>
     </div>
     <div class="settings-group">
-      <h3>同期</h3>
-      <p>未送信の変更: <b id="settings-sync-count">0</b> 件</p>
-      <button id="sync-now-btn" class="btn btn-secondary">今すぐ同期</button>
+      <h3>データ</h3>
+      <button id="reload-btn" class="btn btn-secondary">最新のデータを読み込む</button>
     </div>
     <div class="settings-group">
       <h3>アカウント</h3>
       <p class="muted">ログイン中: <span id="settings-store-name">—</span></p>
       <button id="logout-btn" class="btn btn-danger-outline">ログアウト(店舗の切り替え)</button>
     </div>
-    <p class="muted version">バージョン <span id="app-version"></span></p>
+    <p class="muted version">バージョン 2.0.0(スプレッドシート方式)</p>
   </main>
 
-  <!-- ── 下部ナビ ── -->
   <nav id="bottom-nav">
     <button class="nav-btn active" data-tab="list"><span class="nav-icon">📋</span>一覧</button>
     <button class="nav-btn" data-tab="scan"><span class="nav-icon">📷</span>読取</button>
@@ -137,20 +293,18 @@
   </nav>
 </div>
 
-<!-- ═══ 商品登録・編集フォーム ═══ -->
+<!-- ═══ 登録フォーム ═══ -->
 <section id="view-form" class="view" hidden>
   <header class="form-header">
     <button id="form-back" class="btn-icon">←</button>
     <h2 id="form-title">商品を登録</h2>
   </header>
   <form id="product-form" class="form-body">
-    <div class="field">
+    <div class="field" id="field-barcode">
       <label>バーコード</label>
-      <div class="barcode-row">
-        <input id="f-barcode" type="text" inputmode="numeric" placeholder="(なしでも登録できます)">
-      </div>
+      <input id="f-barcode" type="text" inputmode="numeric" placeholder="(なしでも登録できます)">
     </div>
-    <div class="field">
+    <div class="field" id="field-photo">
       <label>商品写真</label>
       <div class="photo-area">
         <img id="f-photo-preview" alt="" hidden>
@@ -167,7 +321,7 @@
       <label for="f-name">商品名 <span class="req">必須</span></label>
       <input id="f-name" type="text" placeholder="例: ○○ビタミン錠 60錠" required>
     </div>
-    <div class="field" id="lot-fields">
+    <div class="field">
       <label for="f-expiry-month">賞味期限・使用期限(年月) <span class="req">必須</span></label>
       <input id="f-expiry-month" type="month" required>
       <p class="muted" id="month-note">月末の日付として登録されます</p>
@@ -186,7 +340,6 @@
   </form>
 </section>
 
-<!-- ═══ 商品詳細(下から出るシート) ═══ -->
 <div id="sheet-backdrop" hidden></div>
 <section id="sheet-product" class="sheet" hidden>
   <div class="sheet-handle"></div>
@@ -196,10 +349,906 @@
 
 <div id="toast-container"></div>
 
-<script src="vendor/supabase.min.js"></script>
 <script src="vendor/zxing.min.js"></script>
-<script src="js/config.js"></script>
-<script src="js/db.js"></script>
-<script src="js/app.js"></script>
+<script>
+/* ════════════ GAS版クライアント ════════════ */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+const state = {
+  auth: null,          // {storeId, password}
+  myStore: null,       // {id, name}
+  stores: [], products: [], lots: [],   // lotsは全店舗分
+  viewStoreId: null,
+  filter: 'all', sort: 'expiry', search: '', tab: 'list',
+};
+
+/* ── 保存領域の安全ラッパー ──
+   GASの画面はGoogleのサンドボックス内で動くため、ブラウザ設定によっては
+   localStorage へのアクセス自体がエラーになる。失敗しても動き続けるようにする。 */
+function lsGet(k) { try { return localStorage.getItem(k); } catch (_) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (_) {} }
+function lsDel(k) { try { localStorage.removeItem(k); } catch (_) {} }
+
+/* ── GASのAPI(ウェブアプリ)のURL ──
+   このページはGitHub Pagesから配信され、データの読み書きだけを
+   下記のGASウェブアプリに依頼する。GASの再デプロイでURLが変わったら
+   ここを書き換える。 */
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyx_pVVYtYq9YIuUop8gz9QPcRTDq29gsyKiYduikGc4DfFlw7U0pAZfC7fgUMJrN7ncA/exec';
+
+/* ── サーバー呼び出し ── */
+async function gs(fn, ...args) {
+  // GASの画面内で開かれた場合は google.script.run を使う
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    return new Promise((resolve, reject) => {
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler((e) => reject(new Error(e && e.message ? e.message : String(e))))
+        [fn](...args);
+    });
+  }
+  // GitHub Pages等の外部から開かれた場合はAPIとして呼び出す
+  if (GAS_API_URL && GAS_API_URL.indexOf('https://script.google.com/') === 0) {
+    const res = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ fn: fn, args: args }) });
+    let data;
+    try { data = await res.json(); }
+    catch (_) { throw new Error('GAS側の準備ができていません(Code.gsの更新と再デプロイが必要です)'); }
+    if (!data.ok) throw new Error(data.error || '不明なエラー');
+    return data.result;
+  }
+  return mockGs(fn, args);  // ローカルプレビュー用
+}
+
+/* ── ローカルプレビュー用の疑似サーバー(GAS外で開いた時だけ動く)── */
+const mockDb = {
+  stores: [1,2,3,4,5,6].map(i => ({ id: 's'+i, name: '店舗'+i, sort: i, password: String(i).repeat(4) })),
+  products: [], lots: [],
+};
+async function mockGs(fn, args) {
+  $('preview-banner').hidden = false;
+  await new Promise(r => setTimeout(r, 150));
+  const pub = (s) => ({ id: s.id, name: s.name, sort: s.sort });
+  switch (fn) {
+    case 'apiStores': return mockDb.stores.map(pub);
+    case 'apiLogin': {
+      const s = mockDb.stores.find(x => x.id === args[0] && x.password === args[1]);
+      return s ? { ok: true, store: pub(s) } : { ok: false };
+    }
+    case 'apiGetAll': return { stores: mockDb.stores.map(pub), products: mockDb.products, lots: mockDb.lots };
+    case 'apiSaveProduct': {
+      const p = args[1];
+      if (args[2]) p.photoUrl = 'data:image/jpeg;base64,' + args[2];
+      const i = mockDb.products.findIndex(x => x.id === p.id);
+      if (i >= 0) mockDb.products[i] = p; else mockDb.products.push(p);
+      return { ok: true, product: p };
+    }
+    case 'apiSaveLot': {
+      const l = args[1];
+      const i = mockDb.lots.findIndex(x => x.id === l.id);
+      if (i >= 0) mockDb.lots[i] = l; else mockDb.lots.push(l);
+      return { ok: true };
+    }
+    case 'apiDeleteLot': mockDb.lots = mockDb.lots.filter(x => x.id !== args[1]); return { ok: true };
+    case 'apiRenameStore': { const s = mockDb.stores.find(x => x.id === args[1]); if (s) s.name = args[2]; return { ok: true }; }
+  }
+}
+
+/* ── 起動 ── */
+async function init() {
+  bindEvents();
+  try { state.auth = JSON.parse(lsGet('kigen_gas_auth')) || null; } catch (_) {}
+  if (state.auth) {
+    const r = await gs('apiLogin', state.auth.storeId, state.auth.password).catch(() => null);
+    if (r && r.ok) {
+      state.myStore = r.store;
+      $('start-store-name').textContent = r.store.name;
+      showView('view-start');
+      return;
+    }
+    lsDel('kigen_gas_auth');
+  }
+  showLogin();
+}
+
+function showView(name) {
+  const splash = $('boot-splash');
+  if (splash) splash.style.display = 'none';
+  ['view-login', 'view-start', 'view-main', 'view-form'].forEach((v) => { $(v).hidden = v !== name; });
+  if (name !== 'view-main') stopScan();
+}
+
+let busyCount = 0;
+function busy(on) {
+  busyCount = Math.max(0, busyCount + (on ? 1 : -1));
+  $('busy-badge').hidden = busyCount === 0;
+}
+
+/* ── ログイン ── */
+async function showLogin() {
+  showView('view-login');
+  const stores = await gs('apiStores').catch(() => []);
+  state.stores = stores;
+  const last = lsGet('kigen_gas_last_store');
+  $('login-stores').innerHTML = stores.map((s) =>
+    `<button type="button" data-store="${s.id}" class="${s.id === last ? 'selected' : ''}">${esc(s.name)}</button>`
+  ).join('') || '<p class="muted">店舗一覧を取得できません</p>';
+}
+
+async function doLogin(e) {
+  e.preventDefault();
+  const sel = document.querySelector('#login-stores button.selected');
+  const err = $('login-error');
+  err.hidden = true;
+  if (!sel) { err.textContent = '店舗を選択してください'; err.hidden = false; return; }
+  const btn = $('login-btn');
+  btn.disabled = true; btn.textContent = 'ログイン中…';
+  try {
+    const password = $('login-password').value;
+    const r = await gs('apiLogin', sel.dataset.store, password);
+    if (!r.ok) { err.textContent = 'パスワードが違います'; err.hidden = false; return; }
+    state.auth = { storeId: sel.dataset.store, password };
+    state.myStore = r.store;
+    lsSet('kigen_gas_auth', JSON.stringify(state.auth));
+    lsSet('kigen_gas_last_store', r.store.id);
+    $('login-password').value = '';
+    enterMain();
+  } catch (ex) {
+    err.textContent = '通信エラー: ' + ex.message; err.hidden = false;
+  } finally {
+    btn.disabled = false; btn.textContent = 'ログイン';
+  }
+}
+
+/* ── メイン ── */
+async function enterMain() {
+  state.viewStoreId = state.myStore.id;
+  showView('view-main');
+  switchTab('list');
+  // まずキャッシュで即表示 → サーバーから最新化
+  try {
+    const cached = JSON.parse(lsGet('kigen_gas_cache'));
+    if (cached) { Object.assign(state, { stores: cached.stores, products: cached.products, lots: cached.lots }); renderAll(); }
+  } catch (_) {}
+  await reloadAll();
+}
+
+async function reloadAll() {
+  busy(true);
+  try {
+    const data = await gs('apiGetAll', state.auth);
+    state.stores = data.stores;
+    state.products = data.products;
+    state.lots = data.lots.map((l) => ({ ...l, qty: Number(l.qty) }));
+    lsSet('kigen_gas_cache', JSON.stringify({ stores: state.stores, products: state.products, lots: state.lots }));
+    renderAll();
+  } catch (e) {
+    toast('データを読み込めません: ' + e.message, true);
+  } finally { busy(false); }
+}
+
+function renderAll() { renderHeader(); renderStoreSelect(); renderList(); renderSettings(); }
+
+function renderHeader() {
+  const my = state.stores.find((s) => s.id === state.myStore.id);
+  $('header-store-name').textContent = my ? my.name : state.myStore.name;
+  $('settings-store-name').textContent = my ? my.name : state.myStore.name;
+}
+
+function renderStoreSelect() {
+  $('view-store-select').innerHTML = state.stores.map((s) =>
+    `<option value="${s.id}" ${s.id === state.viewStoreId ? 'selected' : ''}>${esc(s.name)}${s.id === state.myStore.id ? '(自店舗)' : ''}</option>`
+  ).join('');
+  $('readonly-note').hidden = state.viewStoreId === state.myStore.id;
+}
+
+/* ── 期限計算 ── */
+function daysUntil(dateStr) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  return Math.round((new Date(dateStr + 'T00:00:00') - today) / 86400000);
+}
+function levelOf(days) {
+  if (days < 0) return 'expired';
+  if (days <= 7) return 'danger';
+  if (days <= 30) return 'warn';
+  return 'ok';
+}
+function fmtDate(d) { const [y, m, dd] = d.split('-').map(Number); return `${y}/${m}/${dd}`; }
+function badgeHtml(d) {
+  const days = daysUntil(d);
+  const lv = levelOf(days);
+  const label = lv === 'expired' ? `期限切れ ${-days}日` : days === 0 ? '本日まで' : `あと${days}日`;
+  return `<span class="badge badge-${lv}">${label}</span>`;
+}
+
+/* ── 一覧 ── */
+function viewLots() { return state.lots.filter((l) => l.storeId === state.viewStoreId); }
+
+function buildGroups() {
+  const map = new Map(state.products.map((p) => [p.id, p]));
+  const groups = new Map();
+  for (const lot of viewLots()) {
+    const p = map.get(lot.productId);
+    if (!p) continue;
+    if (!groups.has(p.id)) groups.set(p.id, { product: p, lots: [] });
+    groups.get(p.id).lots.push(lot);
+  }
+  for (const g of groups.values()) g.lots.sort((a, b) => a.expiry.localeCompare(b.expiry));
+  return [...groups.values()];
+}
+
+function renderList() {
+  let groups = buildGroups();
+  const counts = { expired: 0, danger: 0, warn: 0 };
+  for (const g of groups) {
+    const lvs = g.lots.filter((l) => l.qty > 0).map((l) => levelOf(daysUntil(l.expiry)));
+    if (lvs.includes('expired')) counts.expired++;
+    if (lvs.includes('danger')) counts.danger++;
+    if (lvs.includes('warn')) counts.warn++;
+  }
+  $('cnt-expired').textContent = counts.expired;
+  $('cnt-danger').textContent = counts.danger;
+  $('cnt-warn').textContent = counts.warn;
+
+  const q = state.search.trim().toLowerCase();
+  if (q) groups = groups.filter((g) => g.product.name.toLowerCase().includes(q) || (g.product.barcode || '').includes(q));
+  if (state.filter !== 'all') {
+    groups = groups.filter((g) => g.lots.some((l) => l.qty > 0 && levelOf(daysUntil(l.expiry)) === state.filter));
+  }
+  if (state.sort === 'expiry') groups.sort((a, b) => (a.lots[0]?.expiry || '9999').localeCompare(b.lots[0]?.expiry || '9999'));
+  else if (state.sort === 'name') groups.sort((a, b) => a.product.name.localeCompare(b.product.name, 'ja'));
+  else { const t = (g) => g.lots.reduce((n, l) => n + l.qty, 0); groups.sort((a, b) => t(a) - t(b)); }
+
+  $('list-empty').hidden = groups.length > 0;
+  $('product-list').innerHTML = groups.map((g) => `
+    <div class="product-card" data-product="${g.product.id}">
+      ${thumbHtml(g.product)}
+      <div class="product-info">
+        <div class="product-name">${esc(g.product.name)}</div>
+        ${g.lots.map((l) => `<div class="lot-line">${badgeHtml(l.expiry)}<span>${fmtDate(l.expiry)}</span><span class="lot-qty">在庫 ${l.qty}</span></div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function thumbHtml(p) {
+  return p.photoUrl
+    ? `<img class="product-thumb" src="${esc(p.photoUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
+    : `<div class="product-thumb">📦</div>`;
+}
+
+/* ── 詳細シート ── */
+let sheetProductId = null;
+
+function openSheet(productId) {
+  sheetProductId = productId;
+  renderSheet();
+  $('sheet-backdrop').hidden = false;
+  $('sheet-product').hidden = false;
+}
+function closeSheet() {
+  sheetProductId = null;
+  $('sheet-backdrop').hidden = true;
+  $('sheet-product').hidden = true;
+}
+
+function renderSheet() {
+  const p = state.products.find((x) => x.id === sheetProductId);
+  if (!p) { closeSheet(); return; }
+  const editable = state.viewStoreId === state.myStore.id;
+  const lots = state.lots
+    .filter((l) => l.productId === p.id && l.storeId === state.viewStoreId)
+    .sort((a, b) => a.expiry.localeCompare(b.expiry));
+  const storeName = state.stores.find((s) => s.id === state.viewStoreId)?.name || '';
+
+  const others = new Map();
+  for (const l of state.lots) {
+    if (l.productId !== p.id || l.storeId === state.viewStoreId) continue;
+    if (!others.has(l.storeId)) others.set(l.storeId, []);
+    others.get(l.storeId).push(l);
+  }
+  const otherHtml = others.size
+    ? [...others.entries()].map(([sid, ls]) => {
+        const name = state.stores.find((s) => s.id === sid)?.name || '不明';
+        return `<div class="other-store-row"><b>${esc(name)}</b><span>${ls.map((l) => `${fmtDate(l.expiry)} ×${l.qty}`).join(' / ')}</span></div>`;
+      }).join('')
+    : '<p class="muted">他店舗に在庫はありません</p>';
+
+  $('sheet-body').innerHTML = `
+    <div class="sheet-product-head">
+      ${thumbHtml(p)}
+      <div>
+        <div class="sheet-product-name">${esc(p.name)}
+          <button class="btn-icon" id="sheet-rename" title="商品名を変更">✏️</button>
+        </div>
+        ${p.barcode ? `<div class="sheet-barcode">バーコード: ${esc(p.barcode)}</div>` : ''}
+        ${editable ? `<button class="btn btn-secondary btn-small" id="sheet-photo-btn">📷 ${p.photoUrl ? '写真を変更' : '写真を追加'}</button>` : ''}
+      </div>
+    </div>
+    <div class="sheet-section-title">${esc(storeName)} の期限と在庫</div>
+    ${lots.map((l) => `
+      <div class="lot-row" data-lot="${l.id}">
+        <div class="lot-row-date">${fmtDate(l.expiry)}${badgeHtml(l.expiry)}</div>
+        ${editable ? '<button class="qty-btn" data-act="minus">−</button>' : ''}
+        <span class="lot-row-qty">${l.qty}</span>
+        ${editable ? '<button class="qty-btn" data-act="plus">＋</button><button class="lot-del-btn" data-act="del">🗑</button>' : ''}
+      </div>`).join('') || '<p class="muted">この店舗には在庫が登録されていません</p>'}
+    ${editable ? '<button class="btn btn-secondary" id="sheet-add-lot">＋ 新しい期限(入荷ロット)を追加</button>' : ''}
+    <div class="sheet-section-title">他店舗の在庫状況</div>
+    ${otherHtml}
+  `;
+}
+
+// 詳細シートから商品写真を追加・変更する
+async function onSheetPhotoSelected(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file || !sheetProductId) return;
+  const p = state.products.find((x) => x.id === sheetProductId);
+  if (!p) return;
+  busy(true);
+  try {
+    const blob = await compressImage(file);
+    const b64 = await blobToBase64(blob);
+    const r = await gs('apiSaveProduct', state.auth, { ...p }, b64);
+    Object.assign(p, r.product);
+    renderSheet();
+    renderList();
+    toast('写真を保存しました');
+  } catch (ex) {
+    toast('保存できませんでした: ' + ex.message, true);
+  } finally { busy(false); }
+}
+
+/* ── 在庫の増減・削除 ── */
+const lotTimers = new Map();
+
+function changeLotQty(lotId, delta) {
+  const lot = state.lots.find((l) => l.id === lotId);
+  if (!lot) return;
+  lot.qty = Math.max(0, lot.qty + delta);
+  const el = document.querySelector(`.lot-row[data-lot="${lotId}"] .lot-row-qty`);
+  if (el) el.textContent = lot.qty;
+  renderList();
+  clearTimeout(lotTimers.get(lotId));
+  lotTimers.set(lotId, setTimeout(async () => {
+    busy(true);
+    try { await gs('apiSaveLot', state.auth, { ...lot }); }
+    catch (e) { toast('保存できませんでした: ' + e.message, true); reloadAll(); }
+    finally { busy(false); }
+  }, 600));
+}
+
+async function deleteLot(lotId) {
+  if (!confirm('この期限の在庫記録を削除しますか?')) return;
+  state.lots = state.lots.filter((l) => l.id !== lotId);
+  renderSheet(); renderList();
+  busy(true);
+  try { await gs('apiDeleteLot', state.auth, lotId); toast('削除しました'); }
+  catch (e) { toast('削除できませんでした: ' + e.message, true); reloadAll(); }
+  finally { busy(false); }
+}
+
+/* ── フォーム ── */
+const formState = { mode: 'newProduct', product: null, photoBlob: null };
+
+function uuid() {
+  return (crypto.randomUUID) ? crypto.randomUUID()
+    : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+}
+
+function openForm(mode, opts = {}) {
+  formState.mode = mode;
+  formState.product = opts.product || null;
+  formState.photoBlob = null;
+  $('form-title').textContent = mode === 'addLot' ? '期限を追加' : '商品を登録';
+  $('f-barcode').value = opts.barcode || formState.product?.barcode || '';
+  $('f-name').value = formState.product?.name || '';
+  $('f-name').readOnly = mode === 'addLot';
+  $('f-photo-preview').hidden = true;
+  $('f-photo-preview').src = '';
+  $('ocr-btn').hidden = true;
+  $('ocr-chips').innerHTML = '';
+  $('ocr-status').hidden = true;
+  $('f-expiry').value = '';
+  $('f-expiry-month').value = '';
+  $('f-day-exact').checked = false;
+  $('f-expiry-month').hidden = false;
+  $('f-expiry-month').required = true;
+  $('month-note').hidden = false;
+  $('f-expiry').hidden = true;
+  $('f-expiry').required = false;
+  $('f-qty').value = 1;
+  $('field-barcode').hidden = mode === 'addLot';
+  $('field-photo').hidden = mode === 'addLot';
+  if (formState.product?.photoUrl) {
+    $('f-photo-preview').src = formState.product.photoUrl;
+    $('f-photo-preview').hidden = false;
+  }
+  showView('view-form');
+}
+
+async function onPhotoSelected(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    formState.photoBlob = await compressImage(file);
+    $('f-photo-preview').src = URL.createObjectURL(formState.photoBlob);
+    $('f-photo-preview').hidden = false;
+    $('ocr-btn').hidden = false;
+  } catch (_) { toast('写真を読み込めませんでした', true); }
+  e.target.value = '';
+}
+
+function compressImage(file, maxSize = 900, quality = 0.72) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxSize / Math.max(img.naturalWidth, img.naturalHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.naturalWidth * scale);
+      canvas.height = Math.round(img.naturalHeight * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob((b) => b ? resolve(b) : reject(new Error('圧縮失敗')), 'image/jpeg', quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('読込失敗')); };
+    img.src = url;
+  });
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(String(fr.result).split(',')[1]);
+    fr.onerror = reject;
+    fr.readAsDataURL(blob);
+  });
+}
+
+function getExpiryValue() {
+  if ($('f-day-exact').checked) return $('f-expiry').value || null;
+  const v = $('f-expiry-month').value;
+  if (!v) return null;
+  const [y, m] = v.split('-').map(Number);
+  const last = new Date(y, m, 0).getDate();
+  return `${y}-${String(m).padStart(2, '0')}-${String(last).padStart(2, '0')}`;
+}
+
+async function saveForm(e) {
+  e.preventDefault();
+  const name = $('f-name').value.trim();
+  const expiry = getExpiryValue();
+  const qty = Math.max(0, parseInt($('f-qty').value, 10) || 0);
+  if (!name) { toast('商品名を入力してください', true); return; }
+  if (!expiry) { toast('期限を入力してください', true); return; }
+
+  const saveBtn = $('form-save');
+  saveBtn.disabled = true; saveBtn.textContent = '保存中…';
+  busy(true);
+  try {
+    let product = formState.product;
+    if (formState.mode !== 'addLot') {
+      const barcode = $('f-barcode').value.trim() || '';
+      const existing = barcode ? state.products.find((p) => p.barcode === barcode) : null;
+      product = existing
+        ? { ...existing, name }
+        : { id: uuid(), barcode, name, photoUrl: '' };
+      const photoBase64 = formState.photoBlob ? await blobToBase64(formState.photoBlob) : null;
+      const r = await gs('apiSaveProduct', state.auth, product, photoBase64);
+      product = r.product;
+      const i = state.products.findIndex((p) => p.id === product.id);
+      if (i >= 0) state.products[i] = product; else state.products.push(product);
+    }
+    const dup = state.lots.find((l) => l.productId === product.id && l.storeId === state.myStore.id && l.expiry === expiry);
+    if (dup) {
+      dup.qty += qty;
+      await gs('apiSaveLot', state.auth, { ...dup });
+      toast('同じ期限があったため在庫を合算しました');
+    } else {
+      const lot = { id: uuid(), productId: product.id, storeId: state.myStore.id, expiry, qty };
+      state.lots.push(lot);
+      await gs('apiSaveLot', state.auth, lot);
+      toast('保存しました');
+    }
+    showView('view-main');
+    switchTab('list');
+    renderAll();
+  } catch (ex) {
+    toast('保存できませんでした: ' + ex.message, true);
+  } finally {
+    busy(false);
+    saveBtn.disabled = false; saveBtn.textContent = '保存する';
+  }
+}
+
+/* ── OCR ── */
+async function runOcr() {
+  if (!formState.photoBlob) return;
+  const statusEl = $('ocr-status');
+  statusEl.hidden = false;
+  $('ocr-btn').disabled = true;
+  try {
+    statusEl.textContent = '文字認識の準備中…(初回は1〜2分かかることがあります)';
+    if (!window.Tesseract) {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+        s.onload = res; s.onerror = () => rej(new Error('通信環境を確認してください'));
+        document.head.appendChild(s);
+      });
+    }
+    const worker = await Tesseract.createWorker('jpn', 1, {
+      logger: (m) => { if (m.status === 'recognizing text') statusEl.textContent = `文字を認識中… ${Math.round(m.progress * 100)}%`; },
+    });
+    const { data } = await worker.recognize(formState.photoBlob);
+    await worker.terminate();
+    const candidates = [...new Set(
+      data.text.split('\n').map((s) => s.replace(/\s+/g, ' ').trim())
+        .filter((s) => s.replace(/[^ぁ-んァ-ヶ一-龠a-zA-Z0-9]/g, '').length >= 3)
+    )].sort((a, b) => b.length - a.length).slice(0, 6);
+    if (!candidates.length) statusEl.textContent = '文字を読み取れませんでした。';
+    else {
+      statusEl.textContent = '候補をタップすると商品名に入ります:';
+      $('ocr-chips').innerHTML = candidates.map((c) => `<button type="button" class="chip" data-ocr="${esc(c)}">${esc(c)}</button>`).join('');
+    }
+  } catch (err) {
+    statusEl.textContent = '文字認識に失敗しました: ' + err.message;
+  } finally { $('ocr-btn').disabled = false; }
+}
+
+/* ── バーコード読み取り(本家アプリv1.2.0と同じ方式)── */
+let scanActive = false, scanStream = null, scanLoopTimer = null;
+let nativeDetector = null, zxingReader = null, scanTickCount = 0;
+let lastScan = { code: null, t: 0 };
+let audioCtx = null;
+const SCAN_FORMATS_NATIVE = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'itf', 'qr_code'];
+
+function scanHints() {
+  const F = ZXing.BarcodeFormat;
+  const hints = new Map();
+  hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+    F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.CODE_39, F.ITF, F.RSS_14, F.RSS_EXPANDED, F.QR_CODE,
+  ]);
+  hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+  return hints;
+}
+
+function beep() {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.frequency.value = 1400; gain.gain.value = 0.15;
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.09);
+  } catch (_) {}
+  if (navigator.vibrate) navigator.vibrate(80);
+}
+
+async function startScan() {
+  if (scanActive) return;
+  scanActive = true;
+  const video = $('scan-video');
+  const status = $('scan-status');
+  status.textContent = 'カメラを起動しています…';
+  try {
+    $('scan-area').hidden = false;
+    $('camera-fallback').hidden = true;
+    scanStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+    });
+    video.srcObject = scanStream;
+    await video.play();
+    try {
+      const track = scanStream.getVideoTracks()[0];
+      const caps = track.getCapabilities ? track.getCapabilities() : {};
+      if (caps.zoom && caps.zoom.max >= 2) await track.applyConstraints({ advanced: [{ zoom: Math.min(2, caps.zoom.max) }] });
+    } catch (_) {}
+    nativeDetector = null;
+    if (window.BarcodeDetector) {
+      try { nativeDetector = new BarcodeDetector({ formats: SCAN_FORMATS_NATIVE }); } catch (_) {}
+    }
+    if (typeof ZXing !== 'undefined') {
+      zxingReader = new ZXing.MultiFormatReader();
+      zxingReader.setHints(scanHints());
+    } else {
+      zxingReader = null; // 解析部品が読み込めなくても標準機能だけで続行
+    }
+    scanTickCount = 0;
+    scanTick();
+    status.textContent = 'バーコードを枠内に大きく写してください';
+  } catch (err) {
+    scanActive = false;
+    // GASのサンドボックス内ではライブカメラが許可されないため、
+    // 写真読み取りへの案内に切り替える(写真読み取りは確実に動く)
+    $('scan-area').hidden = true;
+    $('camera-fallback').hidden = false;
+  }
+}
+
+async function scanTick() {
+  if (!scanActive) return;
+  const video = $('scan-video');
+  if (video.readyState >= 2 && video.videoWidth) {
+    try {
+      if (nativeDetector) {
+        const codes = await nativeDetector.detect(video);
+        if (codes.length) onBarcode(codes[0].rawValue);
+      }
+      if (scanActive && zxingReader) {
+        let canvas = cropGuideRegion(video);
+        if (canvas) {
+          if (scanTickCount % 2 === 1) canvas = rotateCanvas90(canvas);
+          try {
+            const source = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
+            const bitmap = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(source));
+            const result = zxingReader.decode(bitmap);
+            if (result) onBarcode(result.getText());
+          } catch (_) {}
+          zxingReader.reset();
+        }
+      }
+    } catch (_) {}
+  }
+  scanTickCount++;
+  scanLoopTimer = setTimeout(scanTick, 200);
+}
+
+function cropGuideRegion(video) {
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!vw || !vh) return null;
+  const cw = Math.round(vw * 0.8), ch = Math.round(vh * 0.62);
+  const cx = Math.round((vw - cw) / 2), cy = Math.round((vh - ch) / 2);
+  const scale = Math.min(1, 1100 / cw);
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(cw * scale);
+  canvas.height = Math.round(ch * scale);
+  canvas.getContext('2d').drawImage(video, cx, cy, cw, ch, 0, 0, canvas.width, canvas.height);
+  return canvas;
+}
+
+function rotateCanvas90(src) {
+  const out = document.createElement('canvas');
+  out.width = src.height; out.height = src.width;
+  const ctx = out.getContext('2d');
+  ctx.translate(out.width / 2, out.height / 2);
+  ctx.rotate(Math.PI / 2);
+  ctx.drawImage(src, -src.width / 2, -src.height / 2);
+  return out;
+}
+
+function stopScan() {
+  scanActive = false;
+  clearTimeout(scanLoopTimer);
+  if (scanStream) { scanStream.getTracks().forEach((t) => t.stop()); scanStream = null; }
+  const v = $('scan-video');
+  if (v) v.srcObject = null;
+  zxingReader = null; nativeDetector = null;
+}
+
+async function decodeImageFile(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
+    if (window.BarcodeDetector) {
+      try {
+        const det = new BarcodeDetector({ formats: SCAN_FORMATS_NATIVE });
+        const codes = await det.detect(img);
+        if (codes.length) return codes[0].rawValue;
+      } catch (_) {}
+    }
+    if (typeof ZXing === 'undefined') return null;
+    const reader = new ZXing.MultiFormatReader();
+    reader.setHints(scanHints());
+    for (const deg of [0, 90, 270, 180]) {
+      const canvas = drawRotated(img, deg, 1600);
+      try {
+        const source = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
+        const bitmap = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(source));
+        const result = reader.decode(bitmap);
+        if (result) return result.getText();
+      } catch (_) {}
+      reader.reset();
+    }
+    return null;
+  } finally { URL.revokeObjectURL(url); }
+}
+
+function drawRotated(img, deg, maxSize) {
+  const scale = Math.min(1, maxSize / Math.max(img.naturalWidth, img.naturalHeight));
+  const w = Math.round(img.naturalWidth * scale), h = Math.round(img.naturalHeight * scale);
+  const canvas = document.createElement('canvas');
+  const swap = deg === 90 || deg === 270;
+  canvas.width = swap ? h : w; canvas.height = swap ? w : h;
+  const ctx = canvas.getContext('2d');
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate((deg * Math.PI) / 180);
+  ctx.drawImage(img, -w / 2, -h / 2, w, h);
+  return canvas;
+}
+
+async function onPhotoScan(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  toast('写真を解析中…');
+  try {
+    const code = await decodeImageFile(file);
+    if (code) { beep(); handleBarcode(code); }
+    else toast('バーコードを見つけられませんでした。大きく写るように撮ってみてください', true);
+  } catch (_) { toast('写真を読み込めませんでした', true); }
+}
+
+function onBarcode(code) {
+  const now = Date.now();
+  if (code === lastScan.code && now - lastScan.t < 3000) return;
+  lastScan = { code, t: now };
+  beep();
+  handleBarcode(code);
+}
+
+function handleBarcode(code) {
+  $('scan-status').textContent = `読み取りました: ${code}`;
+  const product = state.products.find((p) => p.barcode === code);
+  if (product) {
+    openSheet(product.id);
+  } else {
+    if (state.viewStoreId !== state.myStore.id) { toast('未登録の商品です(自店舗表示で登録できます)', true); return; }
+    stopScan();
+    openForm('newProduct', { barcode: code });
+    toast('未登録の商品です。情報を入力してください');
+  }
+}
+
+/* ── 設定 ── */
+function renderSettings() {
+  $('settings-stores').innerHTML = state.stores.map((s) => `
+    <div class="settings-store-row">
+      <span>${esc(s.name)}${s.id === state.myStore.id ? ' <b>(自店舗)</b>' : ''}</span>
+      <button class="rename-btn" data-rename="${s.id}">名前を変更</button>
+    </div>`).join('');
+}
+
+async function renameStore(storeId) {
+  const store = state.stores.find((s) => s.id === storeId);
+  const name = prompt('新しい店舗名を入力してください', store?.name || '');
+  if (!name || !name.trim()) return;
+  store.name = name.trim();
+  renderAll();
+  busy(true);
+  try { await gs('apiRenameStore', state.auth, storeId, store.name); toast('店舗名を変更しました'); }
+  catch (e) { toast('変更できませんでした: ' + e.message, true); reloadAll(); }
+  finally { busy(false); }
+}
+
+/* ── タブ・共通 ── */
+function switchTab(tab) {
+  state.tab = tab;
+  ['list', 'scan', 'settings'].forEach((t) => { $('tab-' + t).hidden = t !== tab; });
+  document.querySelectorAll('.nav-btn').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+  if (tab === 'scan') startScan(); else stopScan();
+}
+
+function toast(msg, isError = false) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (isError ? ' error' : '');
+  el.textContent = msg;
+  $('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function bindEvents() {
+  $('login-stores').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-store]');
+    if (!btn) return;
+    document.querySelectorAll('#login-stores button').forEach((b) => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  });
+  $('login-form').addEventListener('submit', doLogin);
+  $('start-btn').addEventListener('click', enterMain);
+  $('start-switch').addEventListener('click', () => {
+    lsDel('kigen_gas_auth');
+    state.auth = null;
+    showLogin();
+  });
+  document.querySelectorAll('.nav-btn').forEach((b) => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+  $('view-store-select').addEventListener('change', (e) => {
+    state.viewStoreId = e.target.value;
+    renderStoreSelect(); renderList();
+  });
+  $('search-box').addEventListener('input', (e) => { state.search = e.target.value; renderList(); });
+  $('filter-chips').addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    state.filter = chip.dataset.filter;
+    document.querySelectorAll('#filter-chips .chip').forEach((c) => c.classList.toggle('active', c === chip));
+    renderList();
+  });
+  $('sort-select').addEventListener('change', (e) => { state.sort = e.target.value; renderList(); });
+  $('product-list').addEventListener('click', (e) => {
+    const card = e.target.closest('.product-card');
+    if (card) openSheet(card.dataset.product);
+  });
+  $('photo-scan-input').addEventListener('change', onPhotoScan);
+  $('manual-barcode-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const code = $('manual-barcode').value.trim();
+    if (code) { handleBarcode(code); $('manual-barcode').value = ''; }
+  });
+  $('no-barcode-btn').addEventListener('click', () => {
+    if (state.viewStoreId !== state.myStore.id) { toast('自店舗表示に切り替えてください', true); return; }
+    stopScan();
+    openForm('newProduct');
+  });
+  $('sheet-backdrop').addEventListener('click', closeSheet);
+  $('sheet-photo-input').addEventListener('change', onSheetPhotoSelected);
+  $('sheet-body').addEventListener('click', (e) => {
+    const lotRow = e.target.closest('.lot-row');
+    const act = e.target.dataset.act;
+    if (lotRow && act) {
+      if (state.viewStoreId !== state.myStore.id) return;
+      if (act === 'plus') changeLotQty(lotRow.dataset.lot, 1);
+      if (act === 'minus') changeLotQty(lotRow.dataset.lot, -1);
+      if (act === 'del') deleteLot(lotRow.dataset.lot);
+      return;
+    }
+    if (e.target.id === 'sheet-photo-btn') {
+      $('sheet-photo-input').click();
+      return;
+    }
+    if (e.target.id === 'sheet-add-lot') {
+      const p = state.products.find((x) => x.id === sheetProductId);
+      closeSheet();
+      openForm('addLot', { product: p });
+    }
+    if (e.target.id === 'sheet-rename' || e.target.closest('#sheet-rename')) {
+      const p = state.products.find((x) => x.id === sheetProductId);
+      const name = prompt('商品名を変更', p.name);
+      if (name && name.trim() && name.trim() !== p.name) {
+        p.name = name.trim();
+        renderSheet(); renderList();
+        gs('apiSaveProduct', state.auth, { ...p }, null)
+          .catch((e2) => { toast('変更できませんでした: ' + e2.message, true); reloadAll(); });
+      }
+    }
+  });
+  $('form-back').addEventListener('click', () => { showView('view-main'); switchTab(state.tab); });
+  $('product-form').addEventListener('submit', saveForm);
+  $('f-photo').addEventListener('change', onPhotoSelected);
+  $('ocr-btn').addEventListener('click', runOcr);
+  $('ocr-chips').addEventListener('click', (e) => {
+    const chip = e.target.closest('[data-ocr]');
+    if (chip) $('f-name').value = chip.dataset.ocr;
+  });
+  $('f-day-exact').addEventListener('change', (e) => {
+    const exact = e.target.checked;
+    $('f-expiry').hidden = !exact;
+    $('f-expiry').required = exact;
+    $('f-expiry-month').hidden = exact;
+    $('f-expiry-month').required = !exact;
+    $('month-note').hidden = exact;
+  });
+  $('f-qty-plus').addEventListener('click', () => { $('f-qty').value = (parseInt($('f-qty').value, 10) || 0) + 1; });
+  $('f-qty-minus').addEventListener('click', () => { $('f-qty').value = Math.max(0, (parseInt($('f-qty').value, 10) || 0) - 1); });
+  $('settings-stores').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-rename]');
+    if (btn) renameStore(btn.dataset.rename);
+  });
+  $('reload-btn').addEventListener('click', async () => { await reloadAll(); toast('最新のデータを読み込みました'); });
+  $('logout-btn').addEventListener('click', () => {
+    if (!confirm('ログアウトして店舗を切り替えますか?')) return;
+    lsDel('kigen_gas_auth');
+    state.auth = null;
+    showLogin();
+  });
+}
+
+init();
+</script>
 </body>
 </html>
