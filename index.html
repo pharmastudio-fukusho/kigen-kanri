@@ -301,14 +301,14 @@ window.addEventListener('unhandledrejection', function (e) {
       <p class="muted">ログイン中: <span id="settings-store-name">—</span></p>
       <button id="logout-btn" class="btn btn-danger-outline">ログアウト(店舗の切り替え)</button>
     </div>
-    <p class="muted version">バージョン 2.4.0</p>
+    <p class="muted version">バージョン 2.5.0</p>
   </main>
 
   <!-- ── 廃棄記録ページ ── -->
   <main id="tab-disposals" class="tab-page" hidden>
     <button id="disposals-back" class="btn btn-ghost" style="text-align:left;width:auto;padding:8px 4px">← 設定に戻る</button>
     <h2>🚮 廃棄記録</h2>
-    <p class="muted">期限切れで廃棄した商品の記録です(全店舗)。仕入れ数の参考にしてください。スプレッドシートの「廃棄記録」シートでも確認できます。</p>
+    <p class="muted">この店舗で廃棄として記録した商品の一覧です(他店舗の記録は表示されません)。仕入れ数の参考にしてください。全店舗分はスプレッドシートの「廃棄記録」シートで確認できます。</p>
     <div id="disposal-list"></div>
   </main>
 
@@ -671,7 +671,7 @@ function renderList() {
     <div class="product-card" data-product="${g.product.id}">
       ${thumbHtml(g.product)}
       <div class="product-info">
-        <div class="product-name">${esc(g.product.name)}${state.disposals.some((d) => d.productId === g.product.id) ? ' <span class="badge badge-disposed">⚠️廃棄歴</span>' : ''}</div>
+        <div class="product-name">${esc(g.product.name)}${myDisposals().some((d) => d.productId === g.product.id) ? ' <span class="badge badge-disposed">⚠️廃棄歴</span>' : ''}</div>
         ${g.lots.map((l) => `<div class="lot-line">${badgeHtml(l.expiry)}<span>${fmtDate(l.expiry)}</span><span class="lot-qty">在庫 ${l.qty}</span></div>`).join('')}
       </div>
     </div>`).join('');
@@ -717,14 +717,14 @@ function renderSheet() {
     if (!others.has(l.storeId)) others.set(l.storeId, []);
     others.get(l.storeId).push(l);
   }
-  const myDisposals = state.disposals
+  const productDisposals = myDisposals()
     .filter((d) => d.productId === p.id)
     .sort((a, b) => (b.disposedAt || '').localeCompare(a.disposedAt || ''));
-  const disposalHtml = myDisposals.length ? `
-    <div class="sheet-section-title">⚠️ 廃棄の記録(仕入れ時の参考)</div>
+  const disposalHtml = productDisposals.length ? `
+    <div class="sheet-section-title">⚠️ この店舗での廃棄の記録(仕入れ時の参考)</div>
     <div class="disposal-box">
-      ${myDisposals.slice(0, 5).map((d) => `<div class="disposal-row">${esc(d.storeName)}: 期限${fmtDate(d.expiry)} ×${d.qty} を ${d.disposedAt ? fmtDate(d.disposedAt) : ''} に廃棄</div>`).join('')}
-      <div class="muted">期限切れで売り切れなかった実績があります。仕入れ数の参考にしてください。</div>
+      ${productDisposals.slice(0, 5).map((d) => `<div class="disposal-row">期限${fmtDate(d.expiry)} ×${d.qty} を ${d.disposedAt ? fmtDate(d.disposedAt) : ''} に廃棄</div>`).join('')}
+      <div class="muted">この店舗で期限切れになった実績があります。仕入れ数の参考にしてください。</div>
     </div>` : '';
 
   const otherHtml = others.size
@@ -1272,15 +1272,21 @@ function handleBarcode(code) {
 }
 
 /* ── 設定 ── */
+// 廃棄記録は「記録した店舗」でのみ表示する
+// (他店舗では売れる可能性があるため、警告を他店舗に出さない)
+function myDisposals() {
+  return state.disposals.filter((d) => d.storeId === state.myStore.id);
+}
+
 function renderDisposals() {
-  const items = [...state.disposals].sort((a, b) => (b.disposedAt || '').localeCompare(a.disposedAt || ''));
+  const items = [...myDisposals()].sort((a, b) => (b.disposedAt || '').localeCompare(a.disposedAt || ''));
   $('disposal-list').innerHTML = items.map((d) => `
     <div class="disposal-item">
       <div class="disposal-item-name">${esc(d.productName || '(名称不明)')}</div>
-      <div class="muted">${esc(d.storeName || '')} / 期限 ${fmtDate(d.expiry)} / 数量 ${d.qty}</div>
+      <div class="muted">期限 ${fmtDate(d.expiry)} / 数量 ${d.qty}</div>
       <div class="disposal-item-date">${d.disposedAt ? fmtDate(d.disposedAt) + ' に廃棄' : ''}</div>
-      ${d.storeId === state.myStore.id ? `<button class="btn-mini disposal-del" data-disposal="${d.id}">削除</button>` : ''}
-    </div>`).join('') || '<div class="empty-state"><p>廃棄記録はまだありません</p></div>';
+      <button class="btn-mini disposal-del" data-disposal="${d.id}">削除</button>
+    </div>`).join('') || '<div class="empty-state"><p>この店舗の廃棄記録はまだありません</p></div>';
 }
 
 async function deleteDisposal(disposalId) {
@@ -1289,7 +1295,7 @@ async function deleteDisposal(disposalId) {
   markLocalChange();
   renderDisposals();
   renderList();
-  $('disposal-count').textContent = state.disposals.length;
+  $('disposal-count').textContent = myDisposals().length;
   toast('保存中…');
   syncInBackground(async () => {
     await gs('apiDeleteDisposal', state.auth, disposalId);
@@ -1298,7 +1304,7 @@ async function deleteDisposal(disposalId) {
 }
 
 function renderSettings() {
-  $('disposal-count').textContent = state.disposals.length;
+  $('disposal-count').textContent = myDisposals().length;
   $('settings-stores').innerHTML = state.stores.map((s) => `
     <div class="settings-store-row">
       <span>${esc(s.name)}${s.id === state.myStore.id ? ' <b>(自店舗)</b>' : ''}</span>
@@ -1341,6 +1347,7 @@ function switchTab(tab) {
   state.tab = tab;
   ['list', 'scan', 'settings', 'disposals'].forEach((t) => { $('tab-' + t).hidden = t !== tab; });
   if (tab === 'disposals') renderDisposals();
+  if (tab === 'settings') renderSettings();
   document.querySelectorAll('.nav-btn').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
   if (tab === 'scan') startScan(); else stopScan();
 }
